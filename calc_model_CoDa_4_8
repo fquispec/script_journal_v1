@@ -1,1 +1,412 @@
+rm(list = ls())
+library(graphics); library(compositions); library(mgcv);library(robCompositions);library(hydroGOF);
+library(mvoutlier); library(zCompositions)
+
+setwd("C:/Users/Alejandro/Dropbox/CoDa Congress/3.0 R/wat")
+
+filename<-"data_w_co8_v2.csv";  #filename<-"san_v0.csv";
+data<-read.csv(file=filename, header=TRUE, sep = ";", dec = "."); 
+data0W<-data;
+levels(data0W$country)
+
+xlimgraf <-c(2000,2026); 
+ylimgraf=c(0,100)
+#ylimgraf4
+deltazero <- 0.5E-3
+
+plotpdf<-TRUE
+
+################################
+# FIGURA 2
+################################
+if(plotpdf){pdf(file=paste("wat_E1_Esc1.pdf"),width=15, height=25)}
+
+#kk<-4 GAM dof 
+kk<-4
+
+graficoVV<-function(xx1,xx2,xx3,year1,year2,year3,xlimgraf,VV1,VV2,VV3,kk,yy1,yy2,yy3,year1.1,year2.1,year3.1){
+  
+  yearini1 <- year1[1]
+  tt1 <- year1 - yearini1
+  ttt1=c(2010) - yearini1 
+  tttt1<-c(min(year1):max(year1)) - yearini1  
+  
+  yearini2 <- year2[1]
+  tt2 <- year2 - yearini2
+  ttt2=c(2010) - yearini2 
+  tttt2<-c(min(year1):max(year2)) - yearini2 
+  
+  yearini3 <- year3[1]
+  tt3 <- year3 - yearini3
+  ttt3=c(2010) - yearini3 
+  tttt3<-c(min(year1):max(year3)) - yearini3 
+  
+  #Plot1.1:Gráfica de composiciones_Rural
+  plot(year1,xx1[,1], lwd=c(1),main=title(paste("a.1 Data compositional-Water_Rural- ",pais), cex.main=1.2),
+       col=c("black"),text(year1,xx1[,1],cex = 1.1, pos = 3),
+       pch=c(16),xlim=xlimgraf,ylim=ylimgraf,xlab="year",ylab="Coverage", cex.axis=1);
+  points(year1,xx1[,2],col="black",pch=15)
+  points(year1,xx1[,3],col="red",pch=17)
+  points(year1,xx1[,4],col="red",pch=18)
+  legend(2018,100,c("Piped_R","Ot.Improv._R","Surface_R","Ot.Unimprov._R"),
+         col=c("black","black","red","red"),pch=c(16,15,17,18))
+  
+  #Plot1.2:Gráfica de composiciones_Urban
+  plot(year2,xx2[,1], lwd=c(1),main=title(paste("b.1 Data compositional-Water_Urban- ",pais), cex.main=1.2),
+       col=c("blue"),text(year2,xx2[,1],cex = 1.1, pos = 3),
+       pch=c(16),xlim=xlimgraf,ylim=ylimgraf,xlab="year",ylab="Coverage", cex.axis=1);
+  points(year2,xx2[,2],col="blue",pch=15)
+  points(year2,xx2[,3],col="green",pch=17)
+  points(year2,xx2[,4],col="green",pch=18)
+  legend(2018,100,c("Piped_U","Ot.Improv._U","Surface_U","Ot.Unimprov._U"),
+         col=c("blue","blue","green","green"),pch=c(16,15,17,18))
+  
+  #Plot1.3:Gráfica de composiciones_Agregado_U&R
+  plot(year3,xx3[,1], lwd=c(1),main=title(paste("c.1 Data compositional-Water_U&R- ",pais), cex.main=1.2),
+       col=c("black"),pch=c(16),xlim=xlimgraf,ylim=ylimgraf,xlab="year",ylab="Coverage", cex.axis=1);
+  points(year3,xx3[,2],col="black",pch=15)
+  points(year3,xx3[,3],col="red",pch=17)
+  points(year3,xx3[,4],col="red",pch=18)
+  points(year3,xx3[,5],col="blue",pch=16,text(year3,xx3[,5],cex = 1.1, pos = 3)) 
+  points(year3,xx3[,6],col="blue",pch=15)
+  points(year3,xx3[,7],col="green",pch=17)
+  points(year3,xx3[,8],col="green",pch=18)
+  legend(2018,100,c("Piped_R","Ot.Improv._R","Surface_R","Ot.Unimprov._R",
+                    "Piped_U","Ot.Improv._U","Surface_U","Ot.Unimprov._U"),
+         col=c("black","black","red","red","blue","blue","green","green"),pch=c(16,15,17,18,16,15,17,18))
+  
+  #Plot2.1:Gráfica de Transformadas(ilr)_Rural
+  dd1<- unclass(ilr(xx1,VV1));
+  gam1.1 <- gam(dd1[,1]~ s(tt1,k=kk), family=gaussian); 
+  gam2.1 <- gam(dd1[,2]~ s(tt1,k=kk), family=gaussian);
+  gam3.1 <- gam(dd1[,3]~ s(tt1,k=kk), family=gaussian); 
+  gam1.1.pred <- predict.gam(gam1.1);
+  gam2.1.pred <- predict.gam(gam2.1);
+  gam3.1.pred <- predict.gam(gam3.1);
+  r.sq1.1=format(round(summary(gam1.1)$r.sq,digits=3),nsmall=3)
+  r.sq2.1=format(round(summary(gam2.1)$r.sq,digits=3),nsmall=3)
+  r.sq3.1=format(round(summary(gam3.1)$r.sq,digits=3),nsmall=3)
+  zzz1<-ilrInv(array(cbind(gam1.1.pred,gam2.1.pred,gam3.1.pred),dim = c(length(gam1.1.pred),3)),VV1)
+  
+  plot(year1,gam1.1.pred, type="l",main=title(paste("a.2 Transformed_ilr_Rural- Water - ",pais), cex.main=1.2),
+       col=c("blue"),xlab="year",ylab="Transformed ilr",xlim=xlimgraf,ylim=c(-5,8),cex.axis=1);
+  lines(year1,gam2.1.pred,type="l",col="blue");
+  lines(year1,gam3.1.pred,type="l",col="blue")
+  points(year1,dd1[,1],col="blue",pch=13)
+  points(year1,dd1[,2],col="blue",pch=9,text(year1,dd1[,2],cex = 1.1, pos = 3))
+  points(year1,dd1[,3],col="blue",pch=8)
+  legend(2018,3,paste(c("ilr ","ilr1 ","ilr2 ","ilr3 "),c("  R-adJ", r.sq1.1, r.sq2.1, r.sq3.1)),
+         col=c("white","blue","blue","blue"),pch=c(1,13,9,8))
+  legend(2018,0,legend=c("CoDa 4-GAM"),col=c("blue"),
+         lty=c(1),cex=1,box.lty=0)
+  
+  #Plot2.2:Gráfica de Transformadas(ilr)_Urban
+  dd2<- unclass(ilr(xx2,VV2));
+  gam1.2 <- gam(dd2[,1]~ s(tt2,k=kk), family=gaussian); 
+  gam2.2 <- gam(dd2[,2]~ s(tt2,k=kk), family=gaussian);
+  gam3.2 <- gam(dd2[,3]~ s(tt2,k=kk), family=gaussian); 
+  gam1.2.pred <- predict.gam(gam1.2);
+  gam2.2.pred <- predict.gam(gam2.2);
+  gam3.2.pred <- predict.gam(gam3.2);
+  r.sq1.2=format(round(summary(gam1.2)$r.sq,digits=3),nsmall=3)
+  r.sq2.2=format(round(summary(gam2.2)$r.sq,digits=3),nsmall=3)
+  r.sq3.2=format(round(summary(gam3.2)$r.sq,digits=3),nsmall=3)
+  zzz2<-ilrInv(array(cbind(gam1.2.pred,gam2.2.pred,gam3.2.pred),dim = c(length(gam1.2.pred),3)),VV2)
+ 
+  plot(year2,gam1.2.pred, type="l",main=title(paste("b.2 Transformed_ilr_Urban- Water- ",pais), cex.main=1.2),
+       col=c("green"),xlab="year",ylab="Transformed ilr",xlim=xlimgraf,ylim=c(-5,8),cex.axis=1);
+  lines(year2,gam2.2.pred,type="l",col="green");
+  lines(year2,gam3.2.pred,type="l",col="green")
+  points(year2,dd2[,1],col="green",pch=13)
+  points(year2,dd2[,2],col="green",pch=9,text(year2,dd2[,2],cex = 1.1, pos = 3))
+  points(year2,dd2[,3],col="green",pch=8)
+  legend(2018,3,paste(c("ilr ","ilr1 ","ilr2 ","ilr3 "),c("  R-adJ", r.sq1.2, r.sq2.2, r.sq3.2)),
+         col=c("white","green","green","green"),pch=c(1,13,9,8))
+  legend(2018,0,legend=c("CoDa 4-GAM"),col=c("green"),
+         lty=c(1),cex=1,box.lty=0)
+  
+  #Plot2.3:Gráfica de Transformadas(ilr)_Rural/Urban
+  dd3<- unclass(ilr(xx3,VV3));
+  gam1.3 <- gam(dd3[,1]~ s(tt3,k=kk), family=gaussian); 
+  gam2.3 <- gam(dd3[,2]~ s(tt3,k=kk), family=gaussian);
+  gam3.3 <- gam(dd3[,3]~ s(tt3,k=kk), family=gaussian); 
+  gam4.3 <- gam(dd3[,4]~ s(tt3,k=kk), family=gaussian);
+  gam5.3 <- gam(dd3[,5]~ s(tt3,k=kk), family=gaussian);
+  gam6.3 <- gam(dd3[,6]~ s(tt3,k=kk), family=gaussian);
+  gam7.3 <- gam(dd3[,7]~ s(tt3,k=kk), family=gaussian);
+  gam1.3.pred <- predict.gam(gam1.3);
+  gam2.3.pred <- predict.gam(gam2.3);
+  gam3.3.pred <- predict.gam(gam3.3);
+  gam4.3.pred <- predict.gam(gam4.3);
+  gam5.3.pred <- predict.gam(gam5.3);
+  gam6.3.pred <- predict.gam(gam6.3);
+  gam7.3.pred <- predict.gam(gam7.3);
+  r.sq1.3=format(round(summary(gam1.3)$r.sq,digits=3),nsmall=3)
+  r.sq2.3=format(round(summary(gam2.3)$r.sq,digits=3),nsmall=3)
+  r.sq3.3=format(round(summary(gam3.3)$r.sq,digits=3),nsmall=3)
+  r.sq4.3=format(round(summary(gam4.3)$r.sq,digits=3),nsmall=3)
+  r.sq5.3=format(round(summary(gam5.3)$r.sq,digits=3),nsmall=3)
+  r.sq6.3=format(round(summary(gam6.3)$r.sq,digits=3),nsmall=3)
+  r.sq7.3=format(round(summary(gam7.3)$r.sq,digits=3),nsmall=3)
+  zzz3<-ilrInv(array(cbind(gam1.3.pred,gam2.3.pred,gam3.3.pred,gam4.3.pred,gam5.3.pred,gam6.3.pred,gam7.3.pred),
+                     dim = c(length(gam1.3.pred),7)),VV3)
+  
+  plot(year3,gam1.3.pred, type="l",main=title(paste("c.2 Transformed_ilr_U&R - Water - ",pais), cex.main=1.2),
+       col=c("black"),xlab="year",ylab="Transformed ilr",xlim=xlimgraf,ylim=c(-5,8),cex.axis=1);
+  lines(year3,gam2.3.pred,type="l",col="blue");
+  lines(year3,gam3.3.pred,type="l",col="blue")
+  lines(year3,gam4.3.pred,type="l",col="blue")
+  lines(year3,gam5.3.pred,type="l",col="green")
+  lines(year3,gam6.3.pred,type="l",col="green")
+  lines(year3,gam7.3.pred,type="l",col="green")
+  points(year3,dd3[,1],col="black",pch=13)
+  points(year3,dd3[,2],col="blue",pch=9,text(year3,dd3[,2],cex = 1.1, pos = 3))
+  points(year3,dd3[,3],col="blue",pch=8)
+  points(year3,dd3[,4],col="blue",pch=1)
+  points(year3,dd3[,5],col="green",pch=13)
+  points(year3,dd3[,6],col="green",pch=9)
+  points(year3,dd3[,7],col="green",pch=8)
+  legend(2018,8,paste(c("ilr ","ilr1 ","ilr2 ","ilr3 ","ilr4 ","ilr5 ","ilr6 ","ilr7 "),
+                        c("  R-adJ", r.sq1.3, r.sq2.3,r.sq3.3, r.sq4.3, r.sq5.3, r.sq6.3, r.sq7.3)),
+         col=c("white","black","blue","blue","blue","green","green","green"),pch=c(1,13,9,8,1,13,9,8))
+  legend(2018,3,legend=c("CoDa 8-GAM"),col=c("blue"),
+         lty=c(1),cex=1,box.lty=0)
+  
+  #Plot3:Gráfica de outliers en función al año
+  m1=outCoDa(xx1, quantile = 0.975, method = "robust")
+  m2=outCoDa(xx2, quantile = 0.975, method = "robust")
+  m3=outCoDa(xx3, quantile = 0.975, method = "robust")
+  plot(m1) # plots robust estimates of Mahalanobis distance Rural
+  plot(m2) # plots robust estimates of Mahalanobis distance Urban
+  plot(m3) # plots robust estimates of Mahalanobis distance R&U
+  
+  #Claculo de proporciones estimadas de 8 a 4.
+  at1=zzz3[,1]+zzz3[,2]+zzz3[,3]+zzz3[,4]
+  at1.1=(zzz3[,1]/at1)*100
+  at1.2=(zzz3[,2]/at1)*100
+  at1.3=(zzz3[,3]/at1)*100
+  at1.4=(zzz3[,4]/at1)*100
+  at2=zzz3[,5]+zzz3[,6]+zzz3[,7]+zzz3[,8]
+  at2.1=(zzz3[,5]/at2)*100
+  at2.2=(zzz3[,6]/at2)*100
+  at2.3=(zzz3[,7]/at2)*100
+  at2.4=(zzz3[,8]/at2)*100
+  
+  #### NSE de predicciones, entre CoDa_8 y CoDa_4.
+  nse1=format(round(NSE(zzz1[,1]*100,at1.1),digits=4),nsmall=4);
+  nse2=format(round(NSE(zzz1[,2]*100,at1.2),digits=4),nsmall=4);
+  nse3=format(round(NSE(zzz1[,3]*100,at1.3),digits=4),nsmall=4);
+  nse4=format(round(NSE(zzz1[,4]*100,at1.4),digits=4),nsmall=4);
+  nse5=format(round(NSE(zzz2[,1]*100,at2.1),digits=4),nsmall=4);
+  nse6=format(round(NSE(zzz2[,2]*100,at2.2),digits=4),nsmall=4);
+  nse7=format(round(NSE(zzz2[,3]*100,at2.3),digits=4),nsmall=4);
+  nse8=format(round(NSE(zzz2[,4]*100,at2.4),digits=4),nsmall=4);
+  rmse1=format(round(rmse(zzz1[,1]*100,at1.1),digits=4),nsmall=4);
+  rmse2=format(round(rmse(zzz1[,2]*100,at1.2),digits=4),nsmall=4);
+  rmse3=format(round(rmse(zzz1[,3]*100,at1.3),digits=4),nsmall=4);
+  rmse4=format(round(rmse(zzz1[,4]*100,at1.4),digits=4),nsmall=4);
+  rmse5=format(round(rmse(zzz2[,1]*100,at2.1),digits=4),nsmall=4);
+  rmse6=format(round(rmse(zzz2[,2]*100,at2.2),digits=4),nsmall=4);
+  rmse7=format(round(rmse(zzz2[,3]*100,at2.3),digits=4),nsmall=4);
+  rmse8=format(round(rmse(zzz2[,4]*100,at2.4),digits=4),nsmall=4);
+  #nrural=c("NSE",nse1,nse2,nse3,nse4)
+  #nurban=c("NSE",nse5,nse6,nse7,nse8)
+  rmse_ru=c("RMSE",rmse1,rmse2,rmse3,rmse4)
+  rmse_ur=c("RMSE",rmse5,rmse6,rmse7,rmse8)
+  
+  #Plot4.1:Gráfica de estimaciones en composiciones (GAM)_Rural,(Año:2000-2030).
+  plot(year1,zzz1[,1]*100, type="l",col=c("black"),lty=1,main=title(paste("a.4 Predict_CoDa8_vs_CoDa4_Rural- ",pais)),
+       xlab="year",ylab="Coverage",xlim=c(2000,2024),ylim=c(0,110),cex.axis=0.9,cex.lab=1.4);
+  lines(year1,zzz1[,2]*100,type="l",col="black",lty=1);
+  lines(year1,zzz1[,3]*100,type="l",col="red",lty=1);
+  lines(year1,zzz1[,4]*100,type="l",col="red",lty=1);
+  lines(year3,at1.1,type="l",col="blue",lty=3);
+  lines(year3,at1.2,type="l",col="blue",lty=3);
+  lines(year3,at1.3,type="l",col="blue",lty=3);
+  lines(year3,at1.4,type="l",col="blue",lty=3);
+  points(year1,xx1[,1],col="black",pch=16,bty="l")
+  points(year1,xx1[,2],col="black",pch=15)
+  points(year1,xx1[,3],col="red",pch=17)
+  points(year1,xx1[,4],col="red",pch=18)
+  legend(2017.5,60,paste(c("Indica._","Piped _","Ot.Imp._","Surface_","Ot.Uni._ "),rmse_ru),
+         col=c("white","black","black","red","red"),pch=c(0,16,15,17,18),cex=1,title = "RMSE: CoDa8 vs CoDa4")
+  legend(2018,30,legend=c("CoDa 4","CoDa 4","CoDa 8"),col=c("black","red","blue"),
+         lty=c(1,1,3),cex=1.1,box.lty=0)
+  
+  #Plot4.2:Gráfica de estimaciones en composiciones (GAM)_URban,(Año:2000-2030).
+  plot(year2,zzz2[,1]*100, type="l",col=c("blue"),lty=1,main=title(paste("b.4 Predict_CoDa8_vs_CoDa4_Urban- ",pais)),
+       xlab="year",ylab="Coverage",xlim=c(2000,2024),ylim=c(0,110),cex.axis=0.9,cex.lab=1.4);
+  lines(year2,zzz2[,2]*100,type="l",col="blue",lty=1);
+  lines(year2,zzz2[,3]*100,type="l",col="green",lty=1);
+  lines(year2,zzz2[,4]*100,type="l",col="green",lty=1);
+  lines(year3,at2.1,type="l",col="black",lty=3);
+  lines(year3,at2.2,type="l",col="black",lty=3);
+  lines(year3,at2.3,type="l",col="black",lty=3);
+  lines(year3,at2.4,type="l",col="black",lty=3);
+  points(year2,xx2[,1],col="blue",pch=16,bty="l")
+  points(year2,xx2[,2],col="blue",pch=15)
+  points(year2,xx2[,3],col="green",pch=17)
+  points(year2,xx2[,4],col="green",pch=18)
+  legend(2017.5,60,paste(c("Indica._","Piped_","Ot.Imp._","Surface_","Ot.Uni._ "),rmse_ur),
+         col=c("white","blue","blue","green","green"),pch=c(0,16,15,17,18),cex=1,title = "RMSE: CoDa8 vs CoDa4")
+  legend(2018,30,legend=c("CoDa 4","CoDa 4","CoDa 8"),col=c("blue","green","black"),
+         lty=c(1,1,3),cex=1.1,box.lty=0)
+  
+  #Plot4.3:Gráfica de estimaciones en composiciones (GAM)_Datos agregados_U&R,(Año:2000-2030).
+  plot(year3,zzz3[,1]*100, type="l",col=c("black"),lty=1,
+       main= title(paste("C.4 Predict - Water_U&R- ",pais), cex.main=1.4),
+       xlab="year",ylab="Coverage",xlim=c(2000,2022),ylim=c(0,110),cex.axis=1,cex.lab=1.4);
+  lines(year3,zzz3[,2]*100,type="l",col="black",lty=1);
+  lines(year3,zzz3[,3]*100,type="l",col="red",lty=1);
+  lines(year3,zzz3[,4]*100,type="l",col="red",lty=1);
+  lines(year3,zzz3[,5]*100,type="l",col="blue",lty=1);
+  lines(year3,zzz3[,6]*100,type="l",col="blue",lty=1);
+  lines(year3,zzz3[,7]*100,type="l",col="green",lty=1);
+  lines(year3,zzz3[,8]*100,type="l",col="green",lty=1);
+  points(year3,xx3[,1],col="black",pch=16)
+  points(year3,xx3[,2],col="black",pch=15)
+  points(year3,xx3[,3],col="red",pch=17)
+  points(year3,xx3[,4],col="red",pch=18)
+  points(year3,xx3[,5],col="blue",pch=16)
+  points(year3,xx3[,6],col="blue",pch=15)
+  points(year3,xx3[,7],col="green",pch=17)
+  points(year3,xx3[,8],col="green",pch=18)
+  legend(2017.5,75,c("Piped_R","Ot.Imp._R","Surface_R","Ot.Unim._R",
+                     "Piped_U","Ot.Imp._U","Surface_U","Ot.Unim._U"),
+         col=c("black","black","red","red","blue","blue","green","green"),pch=c(16,15,17,18,16,15,17,18),cex=1) 
+  legend(2018,30,legend=c("CoDa 8"),col=c("black"),
+         lty=c(1),cex=1.1,box.lty=0)
+  
+  #Plot5.1:Métrica de calidad de modelo_Rural.
+  a1.1=format(round(NSE(zzz1[,1]*100,xx1[,1]),digits=3),nsmall=3);
+  a2.1=format(round(NSE(zzz1[,2]*100,xx1[,2]),digits=3),nsmall=3);
+  a3.1=format(round(NSE(zzz1[,3]*100,xx1[,3]),digits=3),nsmall=3);
+  a4.1=format(round(NSE(zzz1[,4]*100,xx1[,4]),digits=3),nsmall=3);
+  r_d.1=format(round(NSE(at1.1,xx1[,1]),digits=3),nsmall=3);
+  r_d.2=format(round(NSE(at1.2,xx1[,2]),digits=3),nsmall=3);
+  r_d.3=format(round(NSE(at1.3,xx1[,3]),digits=3),nsmall=3);
+  r_d.4=format(round(NSE(at1.4,xx1[,4]),digits=3),nsmall=3);
+  r1.1=format(round(rmse(zzz1[,1]*100,xx1[,1]),digits=3),nsmall=3);
+  r2.1=format(round(rmse(zzz1[,2]*100,xx1[,2]),digits=3),nsmall=3);
+  r3.1=format(round(rmse(zzz1[,3]*100,xx1[,3]),digits=3),nsmall=3);
+  r4.1=format(round(rmse(zzz1[,4]*100,xx1[,4]),digits=3),nsmall=3);
+  rms_d.1=format(round(rmse(at1.1,xx1[,1]),digits=3),nsmall=3);
+  rms_d.2=format(round(rmse(at1.2,xx1[,2]),digits=3),nsmall=3);
+  rms_d.3=format(round(rmse(at1.3,xx1[,3]),digits=3),nsmall=3);
+  rms_d.4=format(round(rmse(at1.4,xx1[,4]),digits=3),nsmall=3);
+  eti=c("Indicator ","Piped       ","Ot.Impro.  ","Surface   ","Ot.Unimp.");
+  ns=c(" NSE",  a1.1,  a2.1,  a3.1, a4.1);
+  rm=c("RMSE",  r1.1,  r2.1,  r3.1, r4.1);
+  ns_d=c("NSE_d",  r_d.1,  r_d.2,  r_d.3, r_d.4);
+  rm_d=c("RMSE_d", rms_d.1,  rms_d.2,  rms_d.3, rms_d.4);
+  ilr=c("ilr "," ilr1 "," ilr2 "," ilr3 ","      ");
+  radj=c("R-adJ", r.sq1.1, r.sq2.1, r.sq3.1,"     ");
+  plot(year1,zzz1[,1],type="n",main=title(paste("a.5 Métric - Water_Rural- ",pais), cex.main=1.2),
+       xlim=c(2000,2009),ylim=c(0,1),bty="n",xlab="",ylab="",xaxt="n",yaxt="n")
+  legend(2000,0.8,paste(eti,"_",ns,"_",rm," _ ",ns_d," _ ",rm_d),cex = 1.3)
+  
+  #Plot5.2:Métrica de calidad de modelo_Urban.
+  a1.2=format(round(NSE(zzz2[,1]*100,xx2[,1]),digits=3),nsmall=3);
+  a2.2=format(round(NSE(zzz2[,2]*100,xx2[,2]),digits=3),nsmall=3);
+  a3.2=format(round(NSE(zzz2[,3]*100,xx2[,3]),digits=3),nsmall=3);
+  a4.2=format(round(NSE(zzz2[,4]*100,xx2[,4]),digits=3),nsmall=3);
+  u_d.1=format(round(NSE(at2.1,xx2[,1]),digits=3),nsmall=3);
+  u_d.2=format(round(NSE(at2.2,xx2[,2]),digits=3),nsmall=3);
+  u_d.3=format(round(NSE(at2.3,xx2[,3]),digits=3),nsmall=3);
+  u_d.4=format(round(NSE(at2.4,xx2[,4]),digits=3),nsmall=3);
+  r1.2=format(round(rmse(zzz2[,1]*100,xx2[,1]),digits=3),nsmall=3);
+  r2.2=format(round(rmse(zzz2[,2]*100,xx2[,2]),digits=3),nsmall=3);
+  r3.2=format(round(rmse(zzz2[,3]*100,xx2[,3]),digits=3),nsmall=3);
+  r4.2=format(round(rmse(zzz2[,4]*100,xx2[,4]),digits=3),nsmall=3);
+  ums_d.1=format(round(rmse(at2.1,xx2[,1]),digits=3),nsmall=3);
+  ums_d.2=format(round(rmse(at2.2,xx2[,2]),digits=3),nsmall=3);
+  ums_d.3=format(round(rmse(at2.3,xx2[,3]),digits=3),nsmall=3);
+  ums_d.4=format(round(rmse(at2.4,xx2[,4]),digits=3),nsmall=3);
+  eti2=c("Indicator ","Piped       ","Ot.Impro.  ","Surface   ","Ot.Unimp.");
+  ns2=c(" NSE",  a1.2,  a2.2,  a3.2, a4.2);
+  rm2=c("RMSE",  r1.2,  r2.2,  r3.2, r4.2);
+  ns_d2=c(" NSE_d2",  u_d.1,  u_d.2,  u_d.3, u_d.4);
+  rm_d2=c("RMSE_d2", ums_d.1,  ums_d.2,  ums_d.3, ums_d.4);
+  ilr2=c("ilr "," ilr1 "," ilr2 "," ilr3 ","      ");
+  radj2=c("R-adJ", r.sq1.2, r.sq2.2, r.sq3.2,"     ");
+  plot(year2,zzz2[,1],type="n",main=title(paste("b.5 Métric - Water_Urban- ",pais), cex.main=1.2),
+       xlim=c(2000,2009),ylim=c(0,1),bty="n",xlab="",ylab="",xaxt="n",yaxt="n")
+  legend(2000,0.8,paste(eti2,"_",ns2,"_",rm2," _ ",ns_d2," _ ",rm_d2),cex = 1.3)
+  
+  #Plot5.3:Métrica de calidad de modelo_Agregado.
+  a1.3=format(round(NSE(zzz3[,1]*100,xx3[,1]),digits=2),nsmall=2);
+  a2.3=format(round(NSE(zzz3[,2]*100,xx3[,2]),digits=2),nsmall=2);
+  a3.3=format(round(NSE(zzz3[,3]*100,xx3[,3]),digits=2),nsmall=2);
+  a4.3=format(round(NSE(zzz3[,4]*100,xx3[,4]),digits=2),nsmall=2);
+  a5.3=format(round(NSE(zzz3[,5]*100,xx3[,5]),digits=2),nsmall=2);
+  a6.3=format(round(NSE(zzz3[,6]*100,xx3[,6]),digits=2),nsmall=2);
+  a7.3=format(round(NSE(zzz3[,7]*100,xx3[,7]),digits=2),nsmall=2);
+  a8.3=format(round(NSE(zzz3[,8]*100,xx3[,8]),digits=2),nsmall=2);
+  r1.3=format(round(rmse(zzz3[,1]*100,xx3[,1]),digits=3),nsmall=3);
+  r2.3=format(round(rmse(zzz3[,2]*100,xx3[,2]),digits=3),nsmall=3);
+  r3.3=format(round(rmse(zzz3[,3]*100,xx3[,3]),digits=3),nsmall=3);
+  r4.3=format(round(rmse(zzz3[,4]*100,xx3[,4]),digits=3),nsmall=3);
+  r5.3=format(round(rmse(zzz3[,5]*100,xx3[,5]),digits=3),nsmall=3);
+  r6.3=format(round(rmse(zzz3[,6]*100,xx3[,6]),digits=3),nsmall=3);
+  r7.3=format(round(rmse(zzz3[,7]*100,xx3[,7]),digits=3),nsmall=3);
+  r8.3=format(round(rmse(zzz3[,8]*100,xx3[,8]),digits=3),nsmall=3);
+  eti3=c("Indicator   ","Piped_R   ","Ot.Imp._R ","Surface_R","Ot.Uni._R  ","Piped_U    ","Ot.Impr._U ","Surface_U","Ot.Uni._U  ");
+  ns3=c(" NSE",  a1.3,  a2.3,  a3.3, a4.3, a5.3, a6.3, a7.3, a8.3);
+  rm3=c("RMSE",  r1.3,  r2.3,  r3.3, r4.3, r5.3, r6.3, r7.3, r8.3);
+  ilr3=c("ilr "," ilr1 "," ilr2 "," ilr3 "," ilr4 "," ilr5 "," ilr6 ","ilr7","      ");
+  radj3=c("R-adJ", r.sq1.3, r.sq2.3, r.sq3.3, r.sq4.3, r.sq5.3, r.sq6.3, r.sq7.3,"     ");
+  plot(year3,zzz3[,1],type="n",main=title(paste("c.5 Métric - Watern U&R.- ",pais), cex.main=1.2),
+       xlim=c(2000,2009),ylim=c(0,1),bty="n",xlab="",ylab="",xaxt="n",yaxt="n")
+  legend(2000,1,paste(eti3,"_",ns3,"_",rm3,"_",ilr3,"_",radj3),cex = 1.2)
+  #print(z1);print(z1.2);print(z1.3)
+}
+
+data0 <- data0W;  # Sanitation
+iipais<-1; 
+
+for (iipais in c(1:length(levels(data0$country))))
+{par(mfrow=c(5,3))
+  pais<-levels(data0$country)[iipais]; data<-data0[data0$country==pais,]; 
+  
+  #RURAL_CoDa_4
+  aux1<-!is.na(data[,29]); xx1<-data[aux1,c(29:32)];year1<-data[aux1,5];
+  xx1[xx1==0.]<-deltazero;
+  signs1 <- rbind (c( 1, 1, -1, -1),c(1, -1, 0, 0),c(0, 0, 1, -1)); 
+  VV1=gsi.buildilrBase(t(signs1))
+  
+  #URBAN_CoDa_4 
+  aux2<-!is.na(data[,33]); xx2<-data[aux2,c(33:36)];year2<-data[aux2,5];
+  xx2[xx2==0.]<-deltazero;
+  signs2 <- rbind (c( 1, 1, -1, -1),c(1, -1, 0, 0),c(0, 0, 1, -1)); 
+  VV2=gsi.buildilrBase(t(signs2))
+  
+  #RURAL/URBAN_CoDa_8
+  aux3<-!is.na(data[,37]); xx3<-data[aux3,c(37:44)];year3<-data[aux3,5];
+  xx3[xx3==0.]<-deltazero;
+  signs3 <- rbind (c( 1, 1, 1, 1, -1, -1, -1, -1), c( 1, 1, -1, -1, 0, 0, 0, 0),
+                   c( 1, -1, 0, 0, 0, 0, 0, 0), c( 0, 0, 1, -1, 0, 0, 0, 0),
+                   c( 0, 0, 0, 0, 1, 1, -1, -1), c( 0, 0, 0, 0, 1, -1, 0, 0),
+                   c( 0, 0, 0, 0, 0, 0, 1, -1))
+  VV3=gsi.buildilrBase(t(signs3))
+  
+  #Plot
+  graficoVV(xx1,xx2,xx3,year1,year2,year3,xlimgraf,VV1,VV2,VV3,kk,yy1,yy2,yy3,year1.1,year2.1,year3.1)
+  par(mfrow=c(1,1))}
+#
+if(plotpdf){dev.off()}
+
+
+
+
+#######################################################################################################################
+#Change for balance 1 (vv3) with:
+signs3 <- rbind (c( 1, 1, 1, 1, -1, -1, -1, -1), c( 1, 1, -1, -1, 0, 0, 0, 0),
+                 c( 1, -1, 0, 0, 0, 0, 0, 0), c( 0, 0, 1, -1, 0, 0, 0, 0),
+                 c( 0, 0, 0, 0, 1, 1, -1, -1), c( 0, 0, 0, 0, 1, -1, 0, 0),
+                 c( 0, 0, 0, 0, 0, 0, 1, -1))
+#Change for scenary 2 (vv3) with:
+signs3 <- rbind (c( 1, 1, -1, -1, 1, 1, -1, -1), c( 1, 1, 0, 0, -1, -1, 0, 0),
+                 c( +1, -1, 0, 0, 0, 0, 0, 0), c( 0, 0, 0, 0, +1, -1, 0, 0),
+                 c( 0, 0, +1, +1, 0, 0, -1, -1), c( 0, 0, +1, -1, 0, 0, 0, 0),
+                 c( 0, 0, 0, 0, 0, 0, 1, -1))
 
