@@ -1,0 +1,125 @@
+rm(list = ls())
+library(graphics); library(compositions); library(mgcv);library(robCompositions);library(hydroGOF);
+library(mvoutlier); library(zCompositions)
+
+setwd("C:/Users/Alejandro/Dropbox/CoDa Congress/3.0 R/wat")
+
+filename<-"wat_v0.csv";  #filename<-"san_v0.csv";
+data<-read.csv(file=filename, header=TRUE, sep = ";", dec = "."); 
+
+#################################################################################
+#1.0) Calculando las cuatro partes 
+w_pip_ux=round(data[,16],digits=4)                                     ;data=cbind(data,w_pip_u_x=w_pip_ux)
+w_ot.imp_ux=round(data[,15],digits=4)-w_pip_ux                         ;data=cbind(data,w_ot.imp_u_x=w_ot.imp_ux)
+w_sur_ux=round(data[,17],digits=4)                                     ;data=cbind(data,w_sur_u_x=w_sur_ux)
+w_ot.uni_ux=round((100-round(data[,15],digits=4)-w_sur_ux),digits=4)   ;data=cbind(data,w_ot.uni_u_X=w_ot.uni_ux)
+w_pip_rx=round(data[,19],digits=4)                                     ;data=cbind(data,w_pip_r_x=w_pip_rx)
+w_ot.imp_rx=round(data[,18],digits=4)-w_pip_rx                         ;data=cbind(data,w_ot.imp_r_x=w_ot.imp_rx)
+w_sur_rx=round(data[,20],digits=4)                                     ;data=cbind(data,w_sur_r_x=w_sur_rx)
+w_ot.uni_rx=round((100-round(data[,18],digits=4)-w_sur_rx),digits=4)   ;data=cbind(data,w_ot.uni_r_x=w_ot.uni_rx)
+      #contrastando el cierre de CoDa 4 urban and rural
+sum_u=w_pip_ux+w_ot.imp_ux+w_sur_ux+w_ot.uni_ux
+sum_r=w_pip_rx+w_ot.imp_rx+w_sur_rx+w_ot.uni_rx
+data.frame(sum_u,sum_r)
+
+#write.table(data, file="C:/Users/Alejandro/Dropbox/CoDa Congress/3.0 R/san/data_v1.txt",sep=";",dec=".")
+
+
+##############################################################################
+#2.0) Tratando valores cero
+#Kazakhstan, nigeria, paraguay, South Africa 
+
+##Kazakhstan
+du_k<-data[43:57,21:24]
+  ###imput urban
+min(du_k[,1]);min(du_k[,2]);min(du_k[,3]);min(du_k[,4])
+dlk1=c(85.234,3.47,0.04,0.07)
+impu1_k=lrEM(du_k,label=0,dl=dlk1,rob = TRUE)
+impu1_k
+
+##nigeria
+du_n<-data[58:76,21:24];dr_n<-data[58:76,25:28];
+du_n
+  ###imput urban
+min(du_n[,1]);min(du_n[,2]);min(du_n[,3]);min(du_n[,4])
+dln1=c(15.7631,41.6,0.955,0.0344)
+impu1_n=lrEM(du_n,label=0,dl=dln1,rob = TRUE)
+impu1_n
+  ###imput rural
+min(dr_n[,1]);min(dr_n[,2]);min(dr_n[,3]);min(dr_n[,4])
+dln2=c(4.8,30,0.1,0.0449)
+impr1_n=lrEM(dr_n,label=0,dl=dln2,rob = TRUE)
+impr1_n
+
+##paraguay
+du_p<-data[77:97,21:24];dr_p<-data[77:97,25:28];
+du_p
+  ###imput urban
+min(du_p[,1]);min(du_p[,2]);min(du_p[,3]);min(du_p[,4])
+dlp1=c(70.3443,0.6786,0.0030,0.4792)
+impu1_p=lrEM(du_p,label=0,dl=dlp1,rob = TRUE)
+impu1_p
+
+##South africa
+du_sa<-data[98:129,21:24];#dr_p<-data[98:129,25:28];
+du_sa
+###imput urban
+min(du_sa[,1]);min(du_sa[,2]);min(du_sa[,3]);min(du_sa[,4])
+dlsa1=c(97.3137,0.27,0.0181,0.0199)
+impu1_sa=lrEM(du_sa,label=0,dl=dlsa1,rob = TRUE)
+impu1_sa
+
+
+##############################################################################
+#3.0) Transformando CoDa 4 a CoDa 8, multiplicando datos de población.
+
+  ###3.1) Water
+p_u=data[,6]
+p_r=data[,7]
+p_t=data[,8]
+put=p_u/p_t
+prt=p_r/p_t
+
+##Transformation in CoDa8
+w_pip_u_x3=data[,29]*put     ;data=cbind(data,w_pip_u_x3=w_pip_u_x3)
+w_ot.imp_u_x3=data[,30]*put  ;data=cbind(data,w_ot.imp_u_x3=w_ot.imp_u_x3)  
+w_sur_u_x3=data[,31]*put     ;data=cbind(data,w_sur_u_x3=w_sur_u_x3)
+w_ot.uni_u_X3=data[,32]*put  ;data=cbind(data,w_ot.uni_u_X3=w_ot.uni_u_X3)
+w_pip_r_x3=data[,33]*prt     ;data=cbind(data,w_pip_r_x3=w_pip_r_x3)
+w_ot.imp_r_x3=data[,34]*prt  ;data=cbind(data,w_ot.imp_r_x3=w_ot.imp_r_x3)
+w_sur_r_x3=data[,35]*prt     ;data=cbind(data,w_sur_r_x3=w_sur_r_x3)
+w_ot.uni_r_x3=data[,36]*prt  ;data=cbind(data,w_ot.uni_r_x3=w_ot.uni_r_x3)
+
+##Contrastando que todos sumen 100%
+a=w_pip_u_x3+w_ot.imp_u_x3+w_sur_u_x3+w_ot.uni_u_X3+w_pip_r_x3+w_ot.imp_r_x3+w_sur_r_x3+w_ot.uni_r_x3
+data.frame(a)
+
+##Guardando archivo a base:
+write.table(data, file="C:/Users/Alejandro/Dropbox/CoDa Congress/3.0 R/wat/data_w_co8.txt",sep=";",dec=".")
+
+  ###3.2) sanitation
+p_us=data[,6]
+p_rs=data[,7]
+p_ts=data[,8]
+puts=p_us/p_ts
+prts=p_rs/p_ts
+
+##Transformation in CoDa8 Sanitation
+	s_ot.im_ux3=data[,21]*puts     ;data=cbind(data,s_ot.im_ux3=s_ot.im_ux3)
+	s_lat_ux3=data[,22]*puts       ;data=cbind(data,s_lat_ux3=s_lat_ux3)  
+	s_od_ux3=data[,23]*puts        ;data=cbind(data,s_od_ux3=s_od_ux3)
+	s_ot.uni_ux3=data[,24]*puts    ;data=cbind(data,s_ot.uni_ux3=s_ot.uni_ux3)
+	s_ot.im_rx3=data[,25]*prts     ;data=cbind(data,s_ot.im_rx3=s_ot.im_rx3)
+	s_lat_rx3=data[,26]*prts       ;data=cbind(data,s_lat_rx3=s_lat_rx3)
+	s_od_rx3=data[,27]*prts        ;data=cbind(data,s_od_rx3=s_od_rx3)
+	s_ot.uni_rx3=data[,28]*prts    ;data=cbind(data,s_ot.uni_rx3=s_ot.uni_rx3)
+
+##Contrastando que todos sumen 100%
+a=s_ot.im_ux3+s_lat_ux3+s_od_ux3+s_ot.uni_ux3+s_ot.im_rx3+s_lat_rx3+s_od_rx3+s_ot.uni_rx3
+data.frame(a)
+
+##Guardando archivo a base:
+write.table(data, file="C:/Users/Alejandro/Dropbox/CoDa Congress/3.0 R/san/data_s_co8.txt",sep=";",dec=".")
+
+
+
