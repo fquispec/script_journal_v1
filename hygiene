@@ -4,7 +4,7 @@ library(mvoutlier); library(zCompositions)
 
 setwd("C:/Users/Alejandro/Dropbox/CoDa Congress/3.0 R/hyg")
 
-filename<-"benin2.csv";  #filename<-"san_v0.csv";
+filename<-"hyg_v2.csv";
 data<-read.csv(file=filename, header=TRUE, sep = ";", dec = "."); 
 data0W<-data;
 levels(data0W$country)
@@ -18,12 +18,9 @@ plotpdf<-TRUE
 ################################
 # FIGURA 2
 ################################
-if(plotpdf){pdf(file=paste("hyg_E1.pdf"),width=15, height=20)}
+if(plotpdf){pdf(file=paste("XX2.pdf"),width=15, height=20)}
 
-#kk<-4 GAM dof 
-kk<-4
-
-graficoVV<-function(xx1,xx2,xx3,year1,year2,year3,xlimgraf,VV1,VV2,VV3,kk,yy1,yy2,yy3,year1.1,year2.1,year3.1){
+graficoVV<-function(xx1,xx2,xx3,year1,year2,year3,xlimgraf,VV1,VV2,VV3,yy1,yy2,yy3,year1.1,year2.1,year3.1){
   
   yearini1 <- year1[1]
   tt1 <- year1 - yearini1
@@ -72,10 +69,10 @@ graficoVV<-function(xx1,xx2,xx3,year1,year2,year3,xlimgraf,VV1,VV2,VV3,kk,yy1,yy
   
   #Plot2.1:Gráfica de Transformadas(ilr)_Rural
   dd1<- unclass(ilr(xx1,VV1));
-  gam1.1 <- gam(dd1[,1]~ s(tt1,k=kk), family=gaussian); 
-  gam2.1 <- gam(dd1[,2]~ s(tt1,k=kk), family=gaussian);
-  gam1.1.pred <- predict.gam(gam1.1);
-  gam2.1.pred <- predict.gam(gam2.1);
+  gam1.1 <- lm(dd1[,1]~tt1); 
+  gam2.1 <- lm(dd1[,2]~tt1);
+  gam1.1.pred <- predict(gam1.1);
+  gam2.1.pred <- predict(gam2.1);
   r.sq1.1=format(round(summary(gam1.1)$r.sq,digits=3),nsmall=3)
   r.sq2.1=format(round(summary(gam2.1)$r.sq,digits=3),nsmall=3)
   zzz1<-ilrInv(array(cbind(gam1.1.pred,gam2.1.pred),dim = c(length(gam1.1.pred),2)),VV1)
@@ -92,10 +89,10 @@ graficoVV<-function(xx1,xx2,xx3,year1,year2,year3,xlimgraf,VV1,VV2,VV3,kk,yy1,yy
   
   #Plot2.2:Gráfica de Transformadas(ilr)_Urban
   dd2<- unclass(ilr(xx2,VV2));
-  gam1.2 <- gam(dd2[,1]~ s(tt2,k=kk), family=gaussian); 
-  gam2.2 <- gam(dd2[,2]~ s(tt2,k=kk), family=gaussian);
-  gam1.2.pred <- predict.gam(gam1.2);
-  gam2.2.pred <- predict.gam(gam2.2);
+  gam1.2 <- lm(dd2[,1]~tt2); 
+  gam2.2 <- lm(dd2[,2]~tt2);
+  gam1.2.pred <- predict(gam1.2);
+  gam2.2.pred <- predict(gam2.2);
   r.sq1.2=format(round(summary(gam1.2)$r.sq,digits=3),nsmall=3)
   r.sq2.2=format(round(summary(gam2.2)$r.sq,digits=3),nsmall=3)
   zzz2<-ilrInv(array(cbind(gam1.2.pred,gam2.2.pred),dim = c(length(gam1.2.pred),2)),VV2)
@@ -112,16 +109,16 @@ graficoVV<-function(xx1,xx2,xx3,year1,year2,year3,xlimgraf,VV1,VV2,VV3,kk,yy1,yy
   
   #Plot2.3:Gráfica de Transformadas(ilr)_Rural/Urban
   dd3<- unclass(ilr(xx3,VV3));
-  gam1.3 <- gam(dd3[,1]~ s(tt3,k=kk), family=gaussian); 
-  gam2.3 <- gam(dd3[,2]~ s(tt3,k=kk), family=gaussian);
-  gam3.3 <- gam(dd3[,3]~ s(tt3,k=kk), family=gaussian); 
-  gam4.3 <- gam(dd3[,4]~ s(tt3,k=kk), family=gaussian);
-  gam5.3 <- gam(dd3[,5]~ s(tt3,k=kk), family=gaussian);
-  gam1.3.pred <- predict.gam(gam1.3);
-  gam2.3.pred <- predict.gam(gam2.3);
-  gam3.3.pred <- predict.gam(gam3.3);
-  gam4.3.pred <- predict.gam(gam4.3);
-  gam5.3.pred <- predict.gam(gam5.3);
+  gam1.3 <- lm(dd3[,1]~tt3); 
+  gam2.3 <- lm(dd3[,2]~tt3); 
+  gam3.3 <- lm(dd3[,3]~tt3); 
+  gam4.3 <- lm(dd3[,4]~tt3); 
+  gam5.3 <- lm(dd3[,5]~tt3); 
+  gam1.3.pred <- predict(gam1.3);
+  gam2.3.pred <- predict(gam2.3);
+  gam3.3.pred <- predict(gam3.3);
+  gam4.3.pred <- predict(gam4.3);
+  gam5.3.pred <- predict(gam5.3);
   r.sq1.3=format(round(summary(gam1.3)$r.sq,digits=3),nsmall=3)
   r.sq2.3=format(round(summary(gam2.3)$r.sq,digits=3),nsmall=3)
   r.sq3.3=format(round(summary(gam3.3)$r.sq,digits=3),nsmall=3)
@@ -129,7 +126,7 @@ graficoVV<-function(xx1,xx2,xx3,year1,year2,year3,xlimgraf,VV1,VV2,VV3,kk,yy1,yy
   r.sq5.3=format(round(summary(gam5.3)$r.sq,digits=3),nsmall=3)
   zzz3<-ilrInv(array(cbind(gam1.3.pred,gam2.3.pred,gam3.3.pred,gam4.3.pred,gam5.3.pred),
                      dim = c(length(gam1.3.pred),5)),VV3)
-  
+
   plot(year3,gam1.3.pred, type="l",main=title(paste("c.2 Transformed_ilr_U&R -Sanitation- ",pais), cex.main=1.2),
        col=c("black"),xlab="year",ylab="Transformed ilr",xlim=xlimgraf,ylim=c(-5,8),cex.axis=1);
   lines(year3,gam2.3.pred,type="l",col="blue");
@@ -144,15 +141,15 @@ graficoVV<-function(xx1,xx2,xx3,year1,year2,year3,xlimgraf,VV1,VV2,VV3,kk,yy1,yy
   legend(2018,8,paste(c("ilr ","ilr1 ","ilr2 ","ilr3 ","ilr4 ","ilr5 "),
                       c("  R-adJ", r.sq1.3, r.sq2.3,r.sq3.3, r.sq4.3, r.sq5.3)),
          col=c("white","black","blue","blue","blue","green"),pch=c(1,13,9,8,1,13))
-  legend(2018,0,legend=c("CoDa 8-GAM"),col=c("blue"),
+  legend(2018,0,legend=c("CoDa 6-OLS"),col=c("blue"),
          lty=c(1),cex=1,box.lty=0)
   
   #Plot3:Gráfica de outliers en función al año
-  m1=outCoDa(xx1, quantile = 0.975, method = "robust")
-  m2=outCoDa(xx2, quantile = 0.975, method = "robust")
+  #m1=outCoDa(xx1, quantile = 0.975, method = "robust")
+  #m2=outCoDa(xx2, quantile = 0.975, method = "robust")
   #m3=outCoDa(xx3, quantile = 0.975, method = "robust")
-  print(m1$outlierIndex);print(m2$outlierIndex);#print(m3$outlierIndex)
-  print(which(m1$outlierIndex));print(which(m2$outlierIndex));#print(which(m3$outlierIndex))
+  #print(m1$outlierIndex);print(m2$outlierIndex);#print(m3$outlierIndex)
+  #print(which(m1$outlierIndex));print(which(m2$outlierIndex));#print(which(m3$outlierIndex))
   #plot(m1) # plots robust estimates of Mahalanobis distance Rural
   #plot(m2) # plots robust estimates of Mahalanobis distance Urban
   #plot(3) # plots robust estimates of Mahalanobis distance R&U
@@ -173,22 +170,25 @@ graficoVV<-function(xx1,xx2,xx3,year1,year2,year3,xlimgraf,VV1,VV2,VV3,kk,yy1,yy
   at2.3=(zzz3[,6]/at2)*100
 
   #### NSE de predicciones, entre CoDa_8 y CoDa_4.
-  nse1=format(round(NSE(zzz1[,1]*100,at1.1),digits=4),nsmall=4);
-  nse2=format(round(NSE(zzz1[,2]*100,at1.2),digits=4),nsmall=4);
-  nse3=format(round(NSE(zzz1[,3]*100,at1.3),digits=4),nsmall=4);
-  nse4=format(round(NSE(zzz2[,1]*100,at2.1),digits=4),nsmall=4);
-  nse5=format(round(NSE(zzz2[,2]*100,at2.2),digits=4),nsmall=4);
-  nse6=format(round(NSE(zzz2[,3]*100,at2.3),digits=4),nsmall=4);
-  rmse1=format(round(rmse(zzz1[,1]*100,at1.1),digits=4),nsmall=4);
-  rmse2=format(round(rmse(zzz1[,2]*100,at1.2),digits=4),nsmall=4);
-  rmse3=format(round(rmse(zzz1[,3]*100,at1.3),digits=4),nsmall=4);
-  rmse4=format(round(rmse(zzz2[,1]*100,at2.1),digits=4),nsmall=4);
-  rmse5=format(round(rmse(zzz2[,2]*100,at2.2),digits=4),nsmall=4);
-  rmse6=format(round(rmse(zzz2[,3]*100,at2.3),digits=4),nsmall=4);
+  nse1=format(round(NSE(zzz1[,1]*100,at1.1),digits=5),nsmall=5);
+  nse2=format(round(NSE(zzz1[,2]*100,at1.2),digits=5),nsmall=5);
+  nse3=format(round(NSE(zzz1[,3]*100,at1.3),digits=5),nsmall=5);
+  nse4=format(round(NSE(zzz2[,1]*100,at2.1),digits=5),nsmall=5);
+  nse5=format(round(NSE(zzz2[,2]*100,at2.2),digits=5),nsmall=5);
+  nse6=format(round(NSE(zzz2[,3]*100,at2.3),digits=5),nsmall=5);
+  rmse1=format(round(rmse(zzz1[,1]*100,at1.1),digits=5),nsmall=5);
+  rmse2=format(round(rmse(zzz1[,2]*100,at1.2),digits=5),nsmall=5);
+  rmse3=format(round(rmse(zzz1[,3]*100,at1.3),digits=5),nsmall=5);
+  rmse4=format(round(rmse(zzz2[,1]*100,at2.1),digits=5),nsmall=5);
+  rmse5=format(round(rmse(zzz2[,2]*100,at2.2),digits=5),nsmall=5);
+  rmse6=format(round(rmse(zzz2[,3]*100,at2.3),digits=5),nsmall=5);
   #nrural=c("NSE",nse1,nse2,nse3,nse4)
   #nurban=c("NSE",nse5,nse6,nse7,nse8)
   rmse_ru=c("RMSE",rmse1,rmse2,rmse3)
   rmse_ur=c("RMSE",rmse4,rmse5,rmse6)
+  rmse_r_u=c("RMSE",rmse1,rmse2,rmse3,rmse4,rmse5,rmse6)#solo para print y no en plot
+  nse_r_u=c("NSE",nse1,nse2,nse3,nse4,nse5,nse6)#solo para print y no en plot
+  print(rmse_r_u);print(nse_r_u)
   
   #Plot4.1:Gráfica de estimaciones en composiciones (GAM)_Rural,(Año:2000-2030).
   plot(year1,zzz1[,1]*100, type="l",col=c("black"),lty=1,main=title(paste("a.4 Predict_CoDa8_vs_CoDa4_Rural- ",pais)),
@@ -323,7 +323,7 @@ data0 <- data0W;  # Sanitation
 iipais<-1; 
 
 for (iipais in c(1:length(levels(data0$country))))
-{par(mfrow=c(5,3))
+{par(mfrow=c(4,3))
   pais<-levels(data0$country)[iipais]; data<-data0[data0$country==pais,]; 
   
   #RURAL_CoDa_4
@@ -341,16 +341,20 @@ for (iipais in c(1:length(levels(data0$country))))
   #RURAL/URBAN_CoDa_8
   aux3<-!is.na(data[,23]); xx3<-data[aux3,c(23:28)];year3<-data[aux3,5];
   xx3[xx3==0.]<-deltazero;
-  signs3 <- rbind (c( +1, +1, +1, -1, -1, -1), c( +1, +1, -1, 0, 0, 0),
-                   c( +1, -1, 0, 0, 0, 0), c( 0, 0, 0, +1, +1, -1),
-                   c( 0, 0, 0, +1, -1, 0)) #(Balance 1)
-  #signs3 <- rbind (c( +1, +1, -1, +1, +1, -1), c( +1, +1, 0, -1, -1, 0),
-                   #c( +1, -1, 0, 0, 0, 0), c( 0, 0, 0, +1, +1, 0),
-                   #c( 0, 0, +1, 0, 0, -1)) #(Balance 2)
+  
+  #signs3 <- rbind (c( +1, +1, +1, -1, -1, -1), c( +1, +1, -1, 0, 0, 0),
+                   #c( +1, -1, 0, 0, 0, 0), c( 0, 0, 0, +1, +1, -1),
+                   #c( 0, 0, 0, +1, -1, 0)) #(Balance 1)
+  
+  signs3 <- rbind (c( +1, +1, -1, +1, +1, -1), c( +1, +1, 0, -1, -1, 0),
+                   c( +1, -1, 0, 0, 0, 0), c( 0, 0, 0, +1, -1, 0),
+                   c( 0, 0, +1, 0, 0, -1)) #(Balance 2)
+  
+
   VV3=gsi.buildilrBase(t(signs3))
   
   #Plot
-  graficoVV(xx1,xx2,xx3,year1,year2,year3,xlimgraf,VV1,VV2,VV3,kk,yy1,yy2,yy3,year1.1,year2.1,year3.1)
+  graficoVV(xx1,xx2,xx3,year1,year2,year3,xlimgraf,VV1,VV2,VV3,yy1,yy2,yy3,year1.1,year2.1,year3.1)
   par(mfrow=c(1,1))}
 #
 if(plotpdf){dev.off()}
